@@ -1,4 +1,4 @@
-# Local ancestry-aware analysis between genetic variants within the progranulin gene and Alzheimers Disease
+# Local ancestry-aware association analysis between genetic variants within the progranulin gene and Alzheimers Disease
 
 This repository contains the code used to conduct a local ancestry-aware association analyses between genetic variants within the progranulin gene and Alzheimers Disease. This analysis was performed using data from the Alzheimer's Disease Sequencing Project (ADSP). 
 
