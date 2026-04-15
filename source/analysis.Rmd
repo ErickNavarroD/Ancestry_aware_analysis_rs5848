@@ -7,11 +7,17 @@ output: github_document
 
 ## Background
 
-This file documents the analysis conducted to estimate the local ancestry of the variant of interest rs5848 (chr17:44,352,776 in hg38, chr17:44352876 in hg19), which is a variant involved in Fronto Temporal Dementia. The analysis was conducted in Sockeye. 
+This file documents the analysis conducted to estimate the local ancestry of the
+variant of interest rs5848 (chr17:44,352,776 in hg38, chr17:44352876 in hg19), 
+which is a variant involved in Fronto Temporal Dementia. The analysis was 
+conducted in Sockeye. 
 
 ## Subsetting
 
-Since we are only interested in the local ancestry of a single variant, we will subset the data to a +/- 10Mb window from the variant, which is the range chr17:34,352,776-54,352,776. To do so, I used [bcftools](https://samtools.github.io/bcftools/bcftools.html)
+Since we are only interested in the local ancestry of a single variant, we will
+subset the data to a +/- 10Mb window from the variant, which is the range 
+chr17:34,352,776-54,352,776. To do so, I used 
+[bcftools](https://samtools.github.io/bcftools/bcftools.html)
 
 ```{bash eval=FALSE}
 module load CVMFS_CC # Full list of available software here: https://docs.alliancecan.ca/wiki/Available_software ; https://confluence.it.ubc.ca/display/UARC/Accessing+Compute+Canada+Software+Stack
@@ -28,13 +34,19 @@ bcftools index /scratch/st-kdkortha-1/enavarro/pgrn_local_ancestry/data/chr17_su
 
 ## Phasing
 
-The next step is to phase the genotyping data. To do so, we will use [SHAPEIT](https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html#home), which is a fast and accurate method for estimation of haplotypes (aka phasing) from genotype or sequencing data ([paper link](http://www.nature.com/nmeth/journal/v9/n2/full/nmeth.1785.html/)).
+The next step is to phase the genotyping data. To do so, we will use [SHAPEIT](https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html#home), 
+which is a fast and accurate method for estimation of haplotypes (aka phasing) 
+from genotype or sequencing data 
+([paper link](http://www.nature.com/nmeth/journal/v9/n2/full/nmeth.1785.html/)).
 
 ### Shapeit 4 
 
-I will try using directly the hg38 reference directly that I got from here (http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/)
+I will try using directly the hg38 reference directly that I got from 
+[here](http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/)
 
-The genetic map was obtained from here https://github.com/odelaneau/shapeit4/tree/master/maps . This site is recommended in the [shapeit4 documentation](https://odelaneau.github.io/shapeit4/#documentation)
+The genetic map was obtained from here https://github.com/odelaneau/shapeit4/tree/master/maps . 
+This site is recommended in the 
+[shapeit4 documentation](https://odelaneau.github.io/shapeit4/#documentation)
 
 Now I will run the script
 
@@ -66,19 +78,31 @@ shapeit4 --input chr17_subset_v10.vcf.gz --map chr17.b38.gmap.gz --region chr17 
 
 From the Tractor [tutorial](https://atkinson-lab.github.io/Tractor-tutorial/Rfmix.html) : 
 
-Here we use Rfmix to perform local ancestry inference, given its high accuracy in multi-way admixed populations. RFmix takes the following argument and will produce 4 files ASW.deconvoluted.fb.tsv, ASW.deconvoluted.msp.tsv, ASW.deconvoluted.rfmix.Q, ASW.deconvoluted.sis.tsv, most of which will be used in the downstream analysis. This argument points to our cohort file, the reference panel, a map indicating which population each reference individual pertains to, a recombination map for the relevant chromosome, and the location where output should be deposited. 
+Here we use Rfmix to perform local ancestry inference, given its high accuracy 
+in multi-way admixed populations. RFmix takes the following argument and will 
+produce 4 files ASW.deconvoluted.fb.tsv, ASW.deconvoluted.msp.tsv, 
+ASW.deconvoluted.rfmix.Q, ASW.deconvoluted.sis.tsv, most of which will be used 
+in the downstream analysis. This argument points to our cohort file, the 
+reference panel, a map indicating which population each reference individual
+pertains to, a recombination map for the relevant chromosome, and the location 
+where output should be deposited. 
 
 Requirements
 
   -   A phased VCF/BCF file containing "query" haplotypes which are to be analyzed.
   -   A phased VCF/BCF file containing reference haplotypes (in any order)
-  -   A reference sample map file matching reference samples to their respective reference populations
+  -   A reference sample map file matching reference samples to their respective
+  reference populations
   -   A genetic map file
   -   All files mapped or referenced to the same genome assembly
   -   All diploid genotypes must be phase resolved
 
-In addition to the above, you must at minimum also specify a basename (prefix) for output files, and the chromosome to analyze from the VCF/BCF inputs, even if they contain only one chromosome
-If BCF files are used, bcftools must be installed and available in the PATH environment setting
+In addition to the above, you must at minimum also specify a basename (prefix) 
+for output files, and the chromosome to analyze from the VCF/BCF inputs, even 
+if they contain only one chromosome
+If BCF files are used, bcftools must be installed and available in the PATH 
+environment setting
+
 VCF/BCF files may be gzip compressed, and should be indexed using bcftools
 
 So, we need to index the phased vcf first 
@@ -110,7 +134,13 @@ pos     chr     cM
 
 When according to the instructions: 
 
-The genetic map file is tab delimited text containing at least 3 columns. The first 3 columns are intepreted as chromosome, physical position in bp, genetic position in cM. Any number of columns or other information may follow, it is ignored. The chromosome column is a string token (which may be an string of digits) that must match those used in the VCF/BCF inputs. The genetic map file should contain the map for the entire genome (all chromosomes). Blank lines and lines beginning with a '#' are ignored.
+The genetic map file is tab delimited text containing at least 3 columns. The 
+first 3 columns are intepreted as chromosome, physical position in bp, genetic 
+position in cM. Any number of columns or other information may follow, it is 
+ignored. The chromosome column is a string token (which may be an string of 
+digits) that must match those used in the VCF/BCF inputs. The genetic map file
+should contain the map for the entire genome (all chromosomes). Blank lines and
+lines beginning with a '#' are ignored.
 
 ```{bash eval=FALSE}
 cd data 
@@ -122,7 +152,14 @@ zcat data/chr17.b38.gmap.gz | awk -F'\t' -v OFS="\t" '{ print $2, $1, $3}' | tai
 
 Similarly, the sample file needs to be like this: 
 
-It is tab delimited text with at least two columns. The first column gives the sample name or identifier, which must match the one used in the reference VCF/BCF. The second column is a string naming a subpopulation and may contain spaces (e.g., "European", or "East African"). RFMIX will assign all distinct subpopulation names it finds in the sample map file an index number, in alphabetical order. The output will reference by index number; the order is given at the top of the output files. Blank lines and lines beginning with a '#' are ignored in the sample map file. 
+It is tab delimited text with at least two columns. The first column gives the 
+sample name or identifier, which must match the one used in the reference
+VCF/BCF. The second column is a string naming a subpopulation and may contain 
+spaces (e.g., "European", or "East African"). RFMIX will assign all distinct 
+subpopulation names it finds in the sample map file an index number, in 
+alphabetical order. The output will reference by index number; the order is
+given at the top of the output files. Blank lines and lines beginning with a 
+'#' are ignored in the sample map file. 
 
 And it looks like this: 
 
@@ -185,7 +222,11 @@ Inference. Am. J. Hum. Genet. 93, 278-288
 
 ## Tractor
 
-Now I will run [Tractor](https://www.nature.com/articles/s41588-020-00766-y) to conduct an ancestry-specific association analysis. I will be following their [tutorial](https://atkinson-lab.github.io/Tractor-tutorial/). The first step after phasing is to extract the tracts and format the results for Tractors analysis. 
+Now I will run [Tractor](https://www.nature.com/articles/s41588-020-00766-y) 
+to conduct an ancestry-specific association analysis. I will be following 
+their [tutorial](https://atkinson-lab.github.io/Tractor-tutorial/). 
+The first step after phasing is to extract the tracts and format the results 
+for Tractors analysis. 
 
 ### Extract tracts 
 
@@ -227,7 +268,8 @@ INFO (__main__ 124): Iterating through VCF file
 
 ### Create phenotype file 
 
-Ben sent me a phenotype file. I will open it, explore the variables of interest and select the needed information. 
+Ben sent me a phenotype file. I will open it, explore the variables of 
+interest and select the needed information. 
 
 ```{r}
 library(tidyverse)
@@ -256,7 +298,8 @@ table(metadata$Sex, useNA = "always") #0 = male; we have more females than males
 # 12263 19973     0 
 
 #hist(metadata$Age_harmonized)
-# Problem: this is a character variable because we have this category: 90+ This is a problem because it is the mosr abundant category. I will change it to 90. 
+# Problem: this is a character variable because we have this category: 90+ 
+# This is a problem because it is the most abundant category. I will change it to 90. 
 metadata$Age_harmonized <- as.numeric(gsub("\\+","",metadata$Age_harmonized))
 hist(metadata$Age_harmonized)
 #We also have 4437 NAs
@@ -269,7 +312,10 @@ table(metadata$Flag)
 
 ```
 
-After reading the documentation, the number 6 on the flag means that "Subject has an identified twin, see Comments field for the SUBJID of twin". Since twins would break the independece assumption of the linear regression, I will remove one of them. 
+After reading the documentation, the number 6 on the flag means that "Subject 
+has an identified twin, see Comments field for the SUBJID of twin". Since twins
+would break the independece assumption of the linear regression, I will remove 
+one of them. 
 
 ```{r}
 metadata %>% 
@@ -292,9 +338,11 @@ c("A-ADC-AD014009", "A-ADC-AD017039") %in% metadata$SUBJID
 c("A-AMSH-AM001047", "A-AMSH-AM001048") %in% metadata$SUBJID
 ```
 
-After checking them on the metadata, I realized that only one of the twins is present. So The twins have been already removed. 
+After checking them on the metadata, I realized that only one of the twins is 
+present. So The twins have been already removed. 
 
-I will stratify by cohort and check that the number of cases and controls is balanced. 
+I will stratify by cohort and check that the number of cases and controls is 
+balanced. 
 
 ```{r}
 metadata %>% 
@@ -308,13 +356,22 @@ metadata %>%
   coord_flip()
 ```
 
-The diagnosis is NOT balanced across cohorts.
+The diagnosis is not balanced across cohorts, which is at some extent expected 
+from pooling many studies together.
 
-I will now create the phenotype file. The requirements from tractor are the following: 
+I will now create the phenotype file. The requirements from tractor are the 
+following: 
 
---phenofile     [Mandatory] Path to the file containing phenotype and covariate data. Default assumptions: Sample ID column: "IID" or "#IID", Phenotype column: "y". If different column names are used, refer to --sampleidcol and --phenocol arguments. All covariates MUST be included using --covarcollist. tab-delimited
+  -   phenofile     [Mandatory] Path to the file containing phenotype and 
+  covariate data. Default assumptions: Sample ID column: "IID" or "#IID",
+  Phenotype column: "y". If different column names are used, refer to 
+  --sampleidcol and --phenocol arguments. All covariates MUST be included 
+  using --covarcollist. tab-delimited
 
---covarcollist  [Mandatory] Specify column names of covariates in the --phenofile. Only listed columns will be included as covariates. Separate multiple covariates with commas. E.g. --covarcollist age,sex,PC1,PC2. To exclude covariates, specify "--covarcollist none".
+  -   covarcollist  [Mandatory] Specify column names of covariates in the
+  phenofile. Only listed columns will be included as covariates. Separate 
+  multiple covariates with commas. E.g. --covarcollist age,sex,PC1,PC2. 
+  To exclude covariates, specify "--covarcollist none".
 
 ```{r}
 phenofile = metadata %>% 
@@ -335,7 +392,9 @@ We have 687 with missing age.
 
 We have 26566 complete cases.
 
-I could impute the 687 samples with missing age, but since they represent a very small proportion of the data set (2.5%), I will remove them and work only with complete cases.
+I could impute the 687 samples with missing age, but since they represent a 
+very small proportion of the data set (2.5%), I will remove them and work only 
+with complete cases.
 
 ```{r}
 phenofile <- metadata %>% 
@@ -349,7 +408,7 @@ glimpse(phenofile)
 Now I will add the global ancestry PCs
 
 ```{r}
-ga_pcs = read_table("gcad.qc.r4.wgs.36361.GATK.2025.05.07.PCA_allchr.txt")
+ga_pcs = read_table("~/Documents/MScBioinfoUBC/ben_life/gcad.qc.r4.wgs.36361.GATK.2025.05.07.PCA_allchr.txt")
 
 # Now plot them
 ga_pcs %>% 
@@ -373,7 +432,9 @@ ga_pcs %>%
   ggplot(aes(x = PC5, y = PC6)) +
   geom_point()
 
-#PC6 is already not capturing variance that separates the individuals, just a few of them, which is likely to be a local genomic structure. To avoid collider bias (https://pmc.ncbi.nlm.nih.gov/articles/PMC11684764/) I will stop at PC 3. 
+#PC6 is already not capturing variance that separates the individuals, just a 
+#few of them, which is likely to be a local genomic structure. To avoid collider
+# bias (https://pmc.ncbi.nlm.nih.gov/articles/PMC11684764/) I will stop at PC 3. 
 
 #Now I will merge the PCs with the phenotype file
 
@@ -387,15 +448,18 @@ phenofile = phenofile %>%
 md.pattern(phenofile)
 ```
 
-Now, we will remove individuals that are related up to a 4th degree relationship. I will load the object with the relatedness metric provided by our collaborators. 
+Now, we will remove individuals that are related up to a 4th degree relationship. 
+I will load the object with the relatedness metric provided by our collaborators. 
 
 ```{r}
 library(readxl)
-relatedness <- read_excel(here("step1.all_chromosome.pcrelate.0.022_2.xlsx"))
+relatedness <- read_excel(here("~/Documents/MScBioinfoUBC/ben_life/step1.all_chromosome.pcrelate.0.022_2.xlsx"))
 head(relatedness)
 ```
 
-Now I will make a graph to identify families. The object that I loaded is already filtered so that it only contains the individuals with a kinship coefficient > 0.022 (4th degree relationship).
+Now I will make a graph to identify families. The object that I loaded is already
+filtered so that it only contains the individuals with a kinship 
+coefficient > 0.022 (4th degree relationship).
 
 ```{r}
 library(igraph)
@@ -475,7 +539,8 @@ print(p1 + p2)
 dev.off()
 ```
 
-I will now make a more detailed breakdown of the characteristics of our samples. I will do it for both cases and controls. 
+I will now make a more detailed breakdown of the characteristics of our samples.
+I will do it for both cases and controls. 
 
 ```{r}
 #Table for controls
@@ -526,63 +591,6 @@ cases = metadata %>%
     APOE_34 = sum(APOE_WGS == "34", na.rm = TRUE),
     APOE_44 = sum(APOE_WGS == "44", na.rm = TRUE),
     APOE_Unknown = sum(is.na(APOE_WGS), na.rm = TRUE) + sum(APOE_WGS == "14", na.rm = TRUE))
-
-# (controls = metadata %>% 
-#   filter(SampleID %in% phenofile$IID,
-#          DX_harmonized == 0) %>% 
-#   group_by(Race) %>% 
-#   summarise(
-#     n = n()
-#   ) %>%
-#   mutate(Variable = "Race") %>%
-#   dplyr::rename(Category = Race) %>%
-#   bind_rows(metadata %>% 
-#               filter(SampleID %in% phenofile$IID,
-#                      DX_harmonized == 0) %>% 
-#               group_by(Sex) %>% 
-#               summarise(n = n()
-#                         ) %>% 
-#               mutate(Variable = "Sex") %>% 
-#               dplyr::rename(Category = Sex)
-#             ) %>% 
-#   bind_rows(metadata %>% 
-#               filter(SampleID %in% phenofile$IID,
-#                      DX_harmonized == 0) %>% 
-#               group_by(APOE_WGS) %>% 
-#               summarise(n = n()
-#                         ) %>% 
-#               mutate(Variable = "APOE genotype") %>% 
-#               dplyr::rename(Category = APOE_WGS) 
-#             ))
-
-#Now for cases 
-# (cases = metadata %>% 
-#   filter(SampleID %in% phenofile$IID)
-#          DX_harmonized == 1) %>% 
-#   group_by(Race) %>% 
-#   summarise(
-#     n = n()
-#   ) %>%
-#   mutate(Variable = "Race") %>%
-#   dplyr::rename(Category = Race) %>%
-#   bind_rows(metadata %>% 
-#               filter(SampleID %in% phenofile$IID,
-#                      DX_harmonized == 1) %>% 
-#               group_by(Sex) %>% 
-#               summarise(n = n()
-#                         ) %>% 
-#               mutate(Variable = "Sex") %>% 
-#               dplyr::rename(Category = Sex)
-#             ) %>% 
-#   bind_rows(metadata %>% 
-#               filter(SampleID %in% phenofile$IID,
-#                      DX_harmonized == 1) %>% 
-#               group_by(APOE_WGS) %>% 
-#               summarise(n = n()
-#                         ) %>% 
-#               mutate(Variable = "APOE genotype") %>% 
-#               dplyr::rename(Category = APOE_WGS) 
-#             ))
 ```
 
 
@@ -732,7 +740,7 @@ library(here)
 library(ggrepel)
 library(cowplot)
 
-tractor_res <- read_delim("results/tractor_res_PCs1_4_nokin.txt", 
+tractor_res <- read_delim(here("results/tractor_res_PCs1_4_nokin.txt"), 
      delim = "\t", escape_double = FALSE, 
      trim_ws = TRUE)
 
@@ -747,7 +755,9 @@ tractor_res <- read_delim("results/tractor_res_PCs1_4_nokin.txt",
                                   Ancestry == "anc3" ~ "EUR", 
                                   Ancestry == "anc4" ~ "SAS")) %>% 
   arrange(p_adjusted) %>% 
-  select(Ancestry, pval, p_adjusted, everything()))
+  select(Ancestry, pval, p_adjusted, everything()) |> 
+  mutate(sample_size = unique(tractor_res$N),
+         n_alt_alleles = round(2*sample_size*AF*LAprop)))
 
 #Plot the results
 (plot_rs5848= snp_interest %>% 
@@ -774,7 +784,7 @@ write.csv(snp_interest, here("results/results_rs5848.csv"), row.names = FALSE, q
 region_interest = tractor_res %>% 
   filter(POS %in% c(44337379:44353435)) %>% #243 SNPs
   pivot_longer(cols = -c(CHR:N), names_to = c(".value","Ancestry"), names_pattern = "(.+)_(.*$)") %>% 
-  mutate(n_risk_alleles = round(2*N*AF*LAprop)) %>% 
+  mutate(n_alt_alleles = round(2*N*AF*LAprop)) %>% 
   filter(AF > 0.005) %>% 
   mutate(Ancestry = case_when(Ancestry == "anc0" ~ "AFR", 
                                   Ancestry == "anc1" ~ "AMR", 
@@ -783,23 +793,7 @@ region_interest = tractor_res %>%
                                   Ancestry == "anc4" ~ "SAS")) %>%
   mutate(ID_unique = paste(CHR, POS, sep = ":")) %>% 
   mutate(p_adj = pval*length(unique(ID_unique)),#Adjust with bonferroni for the total number of sites tested
-         significant = p_adj < 0.05)
-
-# region_interest = tractor_res %>% 
-#   filter(POS %in% c(44337379:44353435)) %>% #243 SNPs
-#   pivot_longer(cols = -c(CHR:N), names_to = c(".value","Ancestry"), names_pattern = "(.+)_(.*$)") %>% 
-#   mutate(n_risk_alleles = round(2*N*AF*LAprop)) %>% 
-#   filter(AF > 0.005) %>% 
-#   mutate(Ancestry = case_when(Ancestry == "anc0" ~ "AFR", 
-#                                   Ancestry == "anc1" ~ "AMR", 
-#                                   Ancestry == "anc2" ~ "EAS", 
-#                                   Ancestry == "anc3" ~ "EUR", 
-#                                   Ancestry == "anc4" ~ "SAS")) %>%
-#   mutate(ID_unique = paste(CHR, POS, sep = ":")) %>% 
-#   group_by(Ancestry) %>% 
-#   mutate(p_adj = p.adjust(pval, method = "BH"),#Adjust with bonferroni for the total number of sites tested
-#          significant = p_adj < 0.05)
-
+         significant = p_adj < 0.05) 
 (plot_region = region_interest %>% 
   ggplot(aes(x = POS, y = -log10(pval), labels = ID, color = significant)) +
   geom_point()+
@@ -838,8 +832,9 @@ In addition to that, one of the reviewers asked us to do a sensitivity analysis 
 ```{r}
 region_interest_sensitivity = tractor_res %>% 
   filter(POS %in% c(44337379:44363435)) %>% 
-  pivot_longer(cols = -c(CHR:N), names_to = c(".value","Ancestry"), names_pattern = "(.+)_(.*$)") %>% 
-  mutate(n_risk_alleles = round(2*N*AF*LAprop)) %>% 
+  pivot_longer(cols = -c(CHR:N), names_to = c(".value","Ancestry"), 
+               names_pattern = "(.+)_(.*$)") %>% 
+  mutate(n_alt_alleles = round(2*N*AF*LAprop)) %>% 
   filter(AF > 0.005) %>% 
   mutate(Ancestry = case_when(Ancestry == "anc0" ~ "AFR", 
                                   Ancestry == "anc1" ~ "AMR", 
@@ -871,17 +866,20 @@ print(plot_region_s)
 dev.off()
 
 #save results
-write.csv(region_interest_sensitivity, here("results/results_region_sens.csv"), row.names = FALSE, quote = FALSE)
+write.csv(region_interest_sensitivity, here("results/results_region_sens.csv"),
+          row.names = FALSE, 
+          quote = FALSE)
 ```
 
 
 ### Plot demographics 
 
-Now we will create a plot that summarizes the local ancestry of the individuals within the regulatory region of the progranulin gene.
+Now we will create a plot that summarizes the local ancestry of the individuals
+within the regulatory region of the progranulin gene.
 
 ```{r}
 #Load global ancestry estimates from rfmix
-ancestry_proportions <- read_table("results/rfmix_results.rfmix.Q")
+ancestry_proportions <- read_table("~/Documents/MScBioinfoUBC/ben_life/results/rfmix_results.rfmix.Q")
 #Load phenofile
 phenofile = read_table( here("phenofile.txt")) %>% 
   dplyr::rename(DX = y,
@@ -923,6 +921,7 @@ t.test(cases$EAS, controls$EAS)
 t.test(cases$EUR, controls$EUR)
 
 t.test(cases$SAS, controls$SAS)
+
 
 (demographics_plot = ancestry_proportions %>% 
   right_join(phenofile %>% 
@@ -995,7 +994,170 @@ png(here("results/pie_aver_ances_controls.png"),
     units="in", width=6, height=4, res=300)
 pie(slices_controls, labels = lbls_controls, main="Average individual ancestry proportions (controls)", col = cbbPalette)
 dev.off() 
+```
 
+
+Now let's do the same for the 16 kb window. First we need to compute the local 
+ancestry of the individuals in that window. We will use the output of rfmix for 
+that and compute it in the server.
+
+```{r eval=FALSE}
+library(tidyverse)
+library(data.table)
+local_ancestry_20mb = read.csv("rfmix_results.msp.tsv.gz", skip = 1,sep = "\t")
+# We are interested in computing the overall ancestry composition of the
+# region of interest: chr17:44337379-44353435)
+local_ancestry_16kb = local_ancestry_20mb %>% 
+  filter((spos >= 44337379 & spos <= 44353435) |
+           (epos >= 44337379 & epos <= 44353435)
+           )
+n_snps = sum(local_ancestry_16kb$n.snps)
+
+genetic_composition_16kb = local_ancestry_16kb %>% 
+  select(-c(X.chm, spos, epos, sgpos, egpos)) %>% 
+  pivot_longer(-n.snps) %>% 
+  mutate(name = str_sub(name, end = -3)) %>% 
+  mutate(AFR = value == 0,
+         AMR = value == 1,
+         EAS = value == 2,
+         EUR = value == 3, 
+         SAS = value == 4) %>% 
+  mutate(AFR = AFR*n.snps,
+         AMR = AMR*n.snps,
+         EAS = EAS*n.snps,
+         EUR = EUR*n.snps,
+         SAS = SAS*n.snps
+         ) %>% 
+  group_by(name) %>% 
+  summarize(AFR = sum(AFR)/(n_snps*2),
+            AMR = sum(AMR)/(n_snps*2),
+            EAS = sum(EAS)/(n_snps*2),
+            EUR = sum(EUR)/(n_snps*2),
+            SAS = sum(SAS)/(n_snps*2),
+            )
+
+write.csv(genetic_composition_16kb, file = "ga_composition_16kb.csv", row.names = FALSE)
+```
+
+
+```{r}
+#Load global ancestry estimates from rfmix
+ancestry_proportions <- read.csv("~/Documents/MScBioinfoUBC/ben_life/results/ga_composition_16kb.csv") |> 
+  rename(sample = name)
+#Load phenofile
+phenofile = read_table( here("phenofile.txt")) %>% 
+  dplyr::rename(DX = y,
+                sample = IID)
+
+factor_order = ancestry_proportions %>% 
+  arrange(desc(EUR), desc(AFR), desc(AMR), desc(SAS), desc(EAS)) %>% 
+  pull(sample)
+
+#Get the ancestry proportions on average in the whole dataset
+ancestry_proportions %>% 
+  filter(sample %in% phenofile$sample) %>% 
+  column_to_rownames(var = "sample") %>%
+  colMeans() %>%
+  sort() %>% 
+  round(4)
+
+# color blind friendly palette with black:
+cbbPalette <- c("#F0E442",  "#009E73", "#56B4E9", "#E69F00", "#999999")
+
+### separate cases and controls
+cases = ancestry_proportions %>% 
+  right_join(phenofile %>% 
+              select(sample, DX), by = "sample") %>% 
+  filter(DX == 1)
+
+controls = ancestry_proportions %>%
+  right_join(phenofile %>% 
+              select(sample, DX), by = "sample") %>% 
+  filter(DX == 0)
+
+
+#Perform a t-test for each ancestry proportion
+t.test(cases$AFR, controls$AFR)
+ 
+t.test(cases$AMR, controls$AMR)
+
+t.test(cases$EAS, controls$EAS)
+
+t.test(cases$EUR, controls$EUR)
+
+t.test(cases$SAS, controls$SAS)
+
+(demographics_plot_16kb = ancestry_proportions %>% 
+  right_join(phenofile %>% 
+              select(sample, DX), by = "sample") %>%
+  mutate(DX = case_when(DX == 0 ~ "Controls (n = 13,603)",
+                        DX == 1 ~ "Cases (n = 9,416)")) %>%
+  mutate(sample = factor(sample, levels = factor_order)) %>%
+  droplevels() %>% 
+  pivot_longer(cols = -c(sample, DX), names_to = "Ancestry", values_to = "Proportion") %>%
+  mutate(Ancestry = factor(Ancestry, levels = c("EAS", "SAS", "AMR", "AFR", "EUR"))) %>%  #Reorder based on most frequent ancestry proportions
+  ggplot(aes(x = sample, y = Proportion, fill = Ancestry)) +
+  geom_col(width = 1) +
+  scale_fill_manual(values = cbbPalette )+
+  theme_cowplot() + 
+  scale_y_continuous(
+    # don't expand y scale at the lower end
+    expand = expansion(mult = c(0, 0.05))
+  ) +
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
+  facet_grid(~DX, scales = "free_x", space = "free_x" ))
+  
+#Save plot
+png(here("results/demographics_plot_16kb.png"),
+    units="in", width=8, height=3, res=300)
+print(demographics_plot_16kb)
+dev.off()
+
+#Get an average of ancestries on the 16 kb window
+average_ancestries_cases_16kb = ancestry_proportions %>% 
+  filter(sample %in% (phenofile %>% 
+                        filter(DX == 1) %>% 
+                        pull(sample))) %>%
+  mutate(sample = factor(sample, levels = factor_order)) %>%
+  droplevels() %>% 
+  column_to_rownames(var = "sample") %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  rowMeans() %>% 
+  sort()
+#Pie chart
+slices_cases <- average_ancestries_cases_16kb
+lbls_cases <- names(average_ancestries_cases_16kb)
+pie(slices_cases, labels = lbls_cases, main="Average individual ancestry proportions (cases)", col = cbbPalette)
+
+#Save plot
+png(here("results/pie_aver_ances_cases_16kb.png"),
+    units="in", width=6, height=4, res=300)
+pie(slices_cases, labels = lbls_cases, main="Average individual ancestry proportions (cases)", col = cbbPalette)
+dev.off()
+
+#Get an average of ancestries on the whole population controls
+average_ancestries_controls = ancestry_proportions %>% 
+  filter(sample %in% (phenofile %>% 
+                        filter(DX == 0) %>% 
+                        pull(sample))) %>%
+  mutate(sample = factor(sample, levels = factor_order)) %>%
+  droplevels() %>% 
+  column_to_rownames(var = "sample") %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  rowMeans() %>% 
+  sort()
+#Pie chart
+slices_controls <- average_ancestries_controls
+lbls_controls <- names(average_ancestries_controls)
+pie(slices_controls, labels = lbls_controls, main="Average individual ancestry proportions (controls)", col = cbbPalette)
+
+#Save plot
+png(here("results/pie_aver_ances_controls_16kb.png"),
+    units="in", width=6, height=4, res=300)
+pie(slices_controls, labels = lbls_controls, main="Average individual ancestry proportions (controls)", col = cbbPalette)
+dev.off() 
 ```
 
 

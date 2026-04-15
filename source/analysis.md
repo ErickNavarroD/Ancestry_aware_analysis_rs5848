@@ -41,8 +41,7 @@ link](http://www.nature.com/nmeth/journal/v9/n2/full/nmeth.1785.html/)).
 ### Shapeit 4
 
 I will try using directly the hg38 reference directly that I got from
-here
-(<http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/>)
+[here](http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/)
 
 The genetic map was obtained from here
 <https://github.com/odelaneau/shapeit4/tree/master/maps> . This site is
@@ -105,8 +104,10 @@ In addition to the above, you must at minimum also specify a basename
 (prefix) for output files, and the chromosome to analyze from the
 VCF/BCF inputs, even if they contain only one chromosome If BCF files
 are used, bcftools must be installed and available in the PATH
-environment setting VCF/BCF files may be gzip compressed, and should be
-indexed using bcftools
+environment setting
+
+VCF/BCF files may be gzip compressed, and should be indexed using
+bcftools
 
 So, we need to index the phased vcf first
 
@@ -273,10 +274,12 @@ interest and select the needed information.
 library(tidyverse)
 ```
 
+    ## Warning: package 'tibble' was built under R version 4.4.3
+
     ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
     ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
     ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
-    ## ✔ ggplot2   3.5.2     ✔ tibble    3.3.0
+    ## ✔ ggplot2   3.5.2     ✔ tibble    3.3.1
     ## ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
     ## ✔ purrr     1.1.0     
     ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
@@ -288,7 +291,7 @@ library(tidyverse)
 library(here)
 ```
 
-    ## here() starts at /Users/ericknavarro/Documents/MScBioinfoUBC/ben_life
+    ## here() starts at /Users/ericknavarro/Documents/MScBioinfoUBC/Ancestry_aware_analysis_rs5848
 
 ``` r
 library(DataExplorer)
@@ -363,7 +366,8 @@ table(metadata$Sex, useNA = "always") #0 = male; we have more females than males
 # 12263 19973     0 
 
 #hist(metadata$Age_harmonized)
-# Problem: this is a character variable because we have this category: 90+ This is a problem because it is the mosr abundant category. I will change it to 90. 
+# Problem: this is a character variable because we have this category: 90+ 
+# This is a problem because it is the most abundant category. I will change it to 90. 
 metadata$Age_harmonized <- as.numeric(gsub("\\+","",metadata$Age_harmonized))
 hist(metadata$Age_harmonized)
 ```
@@ -469,21 +473,22 @@ metadata %>%
 
 ![](analysis_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
 
-The diagnosis is NOT balanced across cohorts.
+The diagnosis is not balanced across cohorts, which is at some extent
+expected from pooling many studies together.
 
 I will now create the phenotype file. The requirements from tractor are
 the following:
 
-–phenofile \[Mandatory\] Path to the file containing phenotype and
-covariate data. Default assumptions: Sample ID column: “IID” or “\#IID”,
-Phenotype column: “y”. If different column names are used, refer to
-–sampleidcol and –phenocol arguments. All covariates MUST be included
-using –covarcollist. tab-delimited
+- phenofile \[Mandatory\] Path to the file containing phenotype and
+  covariate data. Default assumptions: Sample ID column: “IID” or
+  “\#IID”, Phenotype column: “y”. If different column names are used,
+  refer to –sampleidcol and –phenocol arguments. All covariates MUST be
+  included using –covarcollist. tab-delimited
 
-–covarcollist \[Mandatory\] Specify column names of covariates in the
-–phenofile. Only listed columns will be included as covariates. Separate
-multiple covariates with commas. E.g. –covarcollist age,sex,PC1,PC2. To
-exclude covariates, specify “–covarcollist none”.
+- covarcollist \[Mandatory\] Specify column names of covariates in the
+  phenofile. Only listed columns will be included as covariates.
+  Separate multiple covariates with commas. E.g. –covarcollist
+  age,sex,PC1,PC2. To exclude covariates, specify “–covarcollist none”.
 
 ``` r
 phenofile = metadata %>% 
@@ -537,7 +542,7 @@ glimpse(phenofile)
 Now I will add the global ancestry PCs
 
 ``` r
-ga_pcs = read_table("gcad.qc.r4.wgs.36361.GATK.2025.05.07.PCA_allchr.txt")
+ga_pcs = read_table("~/Documents/MScBioinfoUBC/ben_life/gcad.qc.r4.wgs.36361.GATK.2025.05.07.PCA_allchr.txt")
 ```
 
     ## 
@@ -591,7 +596,9 @@ ga_pcs %>%
 ![](analysis_files/figure-gfm/unnamed-chunk-16-5.png)<!-- -->
 
 ``` r
-#PC6 is already not capturing variance that separates the individuals, just a few of them, which is likely to be a local genomic structure. To avoid collider bias (https://pmc.ncbi.nlm.nih.gov/articles/PMC11684764/) I will stop at PC 3. 
+#PC6 is already not capturing variance that separates the individuals, just a 
+#few of them, which is likely to be a local genomic structure. To avoid collider
+# bias (https://pmc.ncbi.nlm.nih.gov/articles/PMC11684764/) I will stop at PC 3. 
 
 #Now I will merge the PCs with the phenotype file
 
@@ -624,7 +631,7 @@ provided by our collaborators.
 
 ``` r
 library(readxl)
-relatedness <- read_excel(here("step1.all_chromosome.pcrelate.0.022_2.xlsx"))
+relatedness <- read_excel(here("~/Documents/MScBioinfoUBC/ben_life/step1.all_chromosome.pcrelate.0.022_2.xlsx"))
 head(relatedness)
 ```
 
@@ -852,63 +859,6 @@ cases = metadata %>%
     APOE_34 = sum(APOE_WGS == "34", na.rm = TRUE),
     APOE_44 = sum(APOE_WGS == "44", na.rm = TRUE),
     APOE_Unknown = sum(is.na(APOE_WGS), na.rm = TRUE) + sum(APOE_WGS == "14", na.rm = TRUE))
-
-# (controls = metadata %>% 
-#   filter(SampleID %in% phenofile$IID,
-#          DX_harmonized == 0) %>% 
-#   group_by(Race) %>% 
-#   summarise(
-#     n = n()
-#   ) %>%
-#   mutate(Variable = "Race") %>%
-#   dplyr::rename(Category = Race) %>%
-#   bind_rows(metadata %>% 
-#               filter(SampleID %in% phenofile$IID,
-#                      DX_harmonized == 0) %>% 
-#               group_by(Sex) %>% 
-#               summarise(n = n()
-#                         ) %>% 
-#               mutate(Variable = "Sex") %>% 
-#               dplyr::rename(Category = Sex)
-#             ) %>% 
-#   bind_rows(metadata %>% 
-#               filter(SampleID %in% phenofile$IID,
-#                      DX_harmonized == 0) %>% 
-#               group_by(APOE_WGS) %>% 
-#               summarise(n = n()
-#                         ) %>% 
-#               mutate(Variable = "APOE genotype") %>% 
-#               dplyr::rename(Category = APOE_WGS) 
-#             ))
-
-#Now for cases 
-# (cases = metadata %>% 
-#   filter(SampleID %in% phenofile$IID)
-#          DX_harmonized == 1) %>% 
-#   group_by(Race) %>% 
-#   summarise(
-#     n = n()
-#   ) %>%
-#   mutate(Variable = "Race") %>%
-#   dplyr::rename(Category = Race) %>%
-#   bind_rows(metadata %>% 
-#               filter(SampleID %in% phenofile$IID,
-#                      DX_harmonized == 1) %>% 
-#               group_by(Sex) %>% 
-#               summarise(n = n()
-#                         ) %>% 
-#               mutate(Variable = "Sex") %>% 
-#               dplyr::rename(Category = Sex)
-#             ) %>% 
-#   bind_rows(metadata %>% 
-#               filter(SampleID %in% phenofile$IID,
-#                      DX_harmonized == 1) %>% 
-#               group_by(APOE_WGS) %>% 
-#               summarise(n = n()
-#                         ) %>% 
-#               mutate(Variable = "APOE genotype") %>% 
-#               dplyr::rename(Category = APOE_WGS) 
-#             ))
 ```
 
 ### Run GWAS
@@ -1056,7 +1006,7 @@ library(here)
 library(ggrepel)
 library(cowplot)
 
-tractor_res <- read_delim("results/tractor_res_PCs1_4_nokin.txt", 
+tractor_res <- read_delim(here("results/tractor_res_PCs1_4_nokin.txt"), 
      delim = "\t", escape_double = FALSE, 
      trim_ws = TRUE)
 ```
@@ -1082,10 +1032,12 @@ tractor_res <- read_delim("results/tractor_res_PCs1_4_nokin.txt",
                                   Ancestry == "anc3" ~ "EUR", 
                                   Ancestry == "anc4" ~ "SAS")) %>% 
   arrange(p_adjusted) %>% 
-  select(Ancestry, pval, p_adjusted, everything()))
+  select(Ancestry, pval, p_adjusted, everything()) |> 
+  mutate(sample_size = unique(tractor_res$N),
+         n_alt_alleles = round(2*sample_size*AF*LAprop)))
 ```
 
-    ## # A tibble: 5 × 10
+    ## # A tibble: 5 × 12
     ##   Ancestry     pval p_adjusted    AF LAprop      beta     se    tval      LApval
     ##   <chr>       <dbl>      <dbl> <dbl>  <dbl>     <dbl>  <dbl>   <dbl>       <dbl>
     ## 1 EAS      0.000409    0.00205 0.186 0.0362  0.0954   0.027   3.53       5.91e-8
@@ -1093,7 +1045,7 @@ tractor_res <- read_delim("results/tractor_res_PCs1_4_nokin.txt",
     ## 3 AFR      0.434       1       0.753 0.185   0.00864  0.011   0.783      7.58e-5
     ## 4 AMR      0.539       1       0.121 0.0804 -0.0132   0.0215 -0.614      2.57e-4
     ## 5 SAS      0.998       1       0.357 0.0817 -0.000026 0.0137 -0.0019    NA      
-    ## # ℹ 1 more variable: LAeff <dbl>
+    ## # ℹ 3 more variables: LAeff <dbl>, sample_size <dbl>, n_alt_alleles <dbl>
 
 ``` r
 #Plot the results
@@ -1131,7 +1083,7 @@ write.csv(snp_interest, here("results/results_rs5848.csv"), row.names = FALSE, q
 region_interest = tractor_res %>% 
   filter(POS %in% c(44337379:44353435)) %>% #243 SNPs
   pivot_longer(cols = -c(CHR:N), names_to = c(".value","Ancestry"), names_pattern = "(.+)_(.*$)") %>% 
-  mutate(n_risk_alleles = round(2*N*AF*LAprop)) %>% 
+  mutate(n_alt_alleles = round(2*N*AF*LAprop)) %>% 
   filter(AF > 0.005) %>% 
   mutate(Ancestry = case_when(Ancestry == "anc0" ~ "AFR", 
                                   Ancestry == "anc1" ~ "AMR", 
@@ -1140,23 +1092,7 @@ region_interest = tractor_res %>%
                                   Ancestry == "anc4" ~ "SAS")) %>%
   mutate(ID_unique = paste(CHR, POS, sep = ":")) %>% 
   mutate(p_adj = pval*length(unique(ID_unique)),#Adjust with bonferroni for the total number of sites tested
-         significant = p_adj < 0.05)
-
-# region_interest = tractor_res %>% 
-#   filter(POS %in% c(44337379:44353435)) %>% #243 SNPs
-#   pivot_longer(cols = -c(CHR:N), names_to = c(".value","Ancestry"), names_pattern = "(.+)_(.*$)") %>% 
-#   mutate(n_risk_alleles = round(2*N*AF*LAprop)) %>% 
-#   filter(AF > 0.005) %>% 
-#   mutate(Ancestry = case_when(Ancestry == "anc0" ~ "AFR", 
-#                                   Ancestry == "anc1" ~ "AMR", 
-#                                   Ancestry == "anc2" ~ "EAS", 
-#                                   Ancestry == "anc3" ~ "EUR", 
-#                                   Ancestry == "anc4" ~ "SAS")) %>%
-#   mutate(ID_unique = paste(CHR, POS, sep = ":")) %>% 
-#   group_by(Ancestry) %>% 
-#   mutate(p_adj = p.adjust(pval, method = "BH"),#Adjust with bonferroni for the total number of sites tested
-#          significant = p_adj < 0.05)
-
+         significant = p_adj < 0.05) 
 (plot_region = region_interest %>% 
   ggplot(aes(x = POS, y = -log10(pval), labels = ID, color = significant)) +
   geom_point()+
@@ -1224,8 +1160,9 @@ results and make a plot.
 ``` r
 region_interest_sensitivity = tractor_res %>% 
   filter(POS %in% c(44337379:44363435)) %>% 
-  pivot_longer(cols = -c(CHR:N), names_to = c(".value","Ancestry"), names_pattern = "(.+)_(.*$)") %>% 
-  mutate(n_risk_alleles = round(2*N*AF*LAprop)) %>% 
+  pivot_longer(cols = -c(CHR:N), names_to = c(".value","Ancestry"), 
+               names_pattern = "(.+)_(.*$)") %>% 
+  mutate(n_alt_alleles = round(2*N*AF*LAprop)) %>% 
   filter(AF > 0.005) %>% 
   mutate(Ancestry = case_when(Ancestry == "anc0" ~ "AFR", 
                                   Ancestry == "anc1" ~ "AMR", 
@@ -1266,7 +1203,9 @@ dev.off()
 
 ``` r
 #save results
-write.csv(region_interest_sensitivity, here("results/results_region_sens.csv"), row.names = FALSE, quote = FALSE)
+write.csv(region_interest_sensitivity, here("results/results_region_sens.csv"),
+          row.names = FALSE, 
+          quote = FALSE)
 ```
 
 ### Plot demographics
@@ -1276,7 +1215,7 @@ individuals within the regulatory region of the progranulin gene.
 
 ``` r
 #Load global ancestry estimates from rfmix
-ancestry_proportions <- read_table("results/rfmix_results.rfmix.Q")
+ancestry_proportions <- read_table("~/Documents/MScBioinfoUBC/ben_life/results/rfmix_results.rfmix.Q")
 ```
 
     ## 
@@ -1521,6 +1460,292 @@ dev.off()
     ## quartz_off_screen 
     ##                 2
 
+Now let’s do the same for the 16 kb window. First we need to compute the
+local ancestry of the individuals in that window. We will use the output
+of rfmix for that and compute it in the server.
+
+``` r
+library(tidyverse)
+library(data.table)
+local_ancestry_20mb = read.csv("rfmix_results.msp.tsv.gz", skip = 1,sep = "\t")
+# We are interested in computing the overall ancestry composition of the
+# region of interest: chr17:44337379-44353435)
+local_ancestry_16kb = local_ancestry_20mb %>% 
+  filter((spos >= 44337379 & spos <= 44353435) |
+           (epos >= 44337379 & epos <= 44353435)
+           )
+n_snps = sum(local_ancestry_16kb$n.snps)
+
+genetic_composition_16kb = local_ancestry_16kb %>% 
+  select(-c(X.chm, spos, epos, sgpos, egpos)) %>% 
+  pivot_longer(-n.snps) %>% 
+  mutate(name = str_sub(name, end = -3)) %>% 
+  mutate(AFR = value == 0,
+         AMR = value == 1,
+         EAS = value == 2,
+         EUR = value == 3, 
+         SAS = value == 4) %>% 
+  mutate(AFR = AFR*n.snps,
+         AMR = AMR*n.snps,
+         EAS = EAS*n.snps,
+         EUR = EUR*n.snps,
+         SAS = SAS*n.snps
+         ) %>% 
+  group_by(name) %>% 
+  summarize(AFR = sum(AFR)/(n_snps*2),
+            AMR = sum(AMR)/(n_snps*2),
+            EAS = sum(EAS)/(n_snps*2),
+            EUR = sum(EUR)/(n_snps*2),
+            SAS = sum(SAS)/(n_snps*2),
+            )
+
+write.csv(genetic_composition_16kb, file = "ga_composition_16kb.csv", row.names = FALSE)
+```
+
+``` r
+#Load global ancestry estimates from rfmix
+ancestry_proportions <- read.csv("~/Documents/MScBioinfoUBC/ben_life/results/ga_composition_16kb.csv") |> 
+  rename(sample = name)
+#Load phenofile
+phenofile = read_table( here("phenofile.txt")) %>% 
+  dplyr::rename(DX = y,
+                sample = IID)
+```
+
+    ## 
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## cols(
+    ##   IID = col_character(),
+    ##   y = col_double(),
+    ##   Age_harmonized = col_double(),
+    ##   Sex = col_double(),
+    ##   PC1 = col_double(),
+    ##   PC2 = col_double(),
+    ##   PC3 = col_double(),
+    ##   PC4 = col_double()
+    ## )
+
+``` r
+factor_order = ancestry_proportions %>% 
+  arrange(desc(EUR), desc(AFR), desc(AMR), desc(SAS), desc(EAS)) %>% 
+  pull(sample)
+
+#Get the ancestry proportions on average in the whole dataset
+ancestry_proportions %>% 
+  filter(sample %in% phenofile$sample) %>% 
+  column_to_rownames(var = "sample") %>%
+  colMeans() %>%
+  sort() %>% 
+  round(4)
+```
+
+    ##    AMR    AFR    EAS    SAS    EUR 
+    ## 0.0077 0.0169 0.0234 0.0288 0.9231
+
+``` r
+# color blind friendly palette with black:
+cbbPalette <- c("#F0E442",  "#009E73", "#56B4E9", "#E69F00", "#999999")
+
+### separate cases and controls
+cases = ancestry_proportions %>% 
+  right_join(phenofile %>% 
+              select(sample, DX), by = "sample") %>% 
+  filter(DX == 1)
+
+controls = ancestry_proportions %>%
+  right_join(phenofile %>% 
+              select(sample, DX), by = "sample") %>% 
+  filter(DX == 0)
+
+
+#Perform a t-test for each ancestry proportion
+t.test(cases$AFR, controls$AFR)
+```
+
+    ## 
+    ##  Welch Two Sample t-test
+    ## 
+    ## data:  cases$AFR and controls$AFR
+    ## t = -1.6484, df = 326.96, p-value = 0.1002
+    ## alternative hypothesis: true difference in means is not equal to 0
+    ## 95 percent confidence interval:
+    ##  -0.040966980  0.003612604
+    ## sample estimates:
+    ##   mean of x   mean of y 
+    ## 0.007389163 0.026066351
+
+``` r
+t.test(cases$AMR, controls$AMR)
+```
+
+    ## 
+    ##  Welch Two Sample t-test
+    ## 
+    ## data:  cases$AMR and controls$AMR
+    ## t = -0.37519, df = 411.25, p-value = 0.7077
+    ## alternative hypothesis: true difference in means is not equal to 0
+    ## 95 percent confidence interval:
+    ##  -0.013213601  0.008978042
+    ## sample estimates:
+    ##   mean of x   mean of y 
+    ## 0.006643574 0.008761353
+
+``` r
+t.test(cases$EAS, controls$EAS)
+```
+
+    ## 
+    ##  Welch Two Sample t-test
+    ## 
+    ## data:  cases$EAS and controls$EAS
+    ## t = -1.0273, df = 393.87, p-value = 0.3049
+    ## alternative hypothesis: true difference in means is not equal to 0
+    ## 95 percent confidence interval:
+    ##  -0.03534252  0.01108319
+    ## sample estimates:
+    ##  mean of x  mean of y 
+    ## 0.01724138 0.02937105
+
+``` r
+t.test(cases$EUR, controls$EUR)
+```
+
+    ## 
+    ##  Welch Two Sample t-test
+    ## 
+    ## data:  cases$EUR and controls$EUR
+    ## t = 1.0392, df = 403.31, p-value = 0.2994
+    ## alternative hypothesis: true difference in means is not equal to 0
+    ## 95 percent confidence interval:
+    ##  -0.01869979  0.06063711
+    ## sample estimates:
+    ## mean of x mean of y 
+    ## 0.9337906 0.9128219
+
+``` r
+t.test(cases$SAS, controls$SAS)
+```
+
+    ## 
+    ##  Welch Two Sample t-test
+    ## 
+    ## data:  cases$SAS and controls$SAS
+    ## t = 1.0347, df = 379.8, p-value = 0.3015
+    ## alternative hypothesis: true difference in means is not equal to 0
+    ## 95 percent confidence interval:
+    ##  -0.01076477  0.03467672
+    ## sample estimates:
+    ##  mean of x  mean of y 
+    ## 0.03493533 0.02297936
+
+``` r
+(demographics_plot_16kb = ancestry_proportions %>% 
+  right_join(phenofile %>% 
+              select(sample, DX), by = "sample") %>%
+  mutate(DX = case_when(DX == 0 ~ "Controls (n = 13,603)",
+                        DX == 1 ~ "Cases (n = 9,416)")) %>%
+  mutate(sample = factor(sample, levels = factor_order)) %>%
+  droplevels() %>% 
+  pivot_longer(cols = -c(sample, DX), names_to = "Ancestry", values_to = "Proportion") %>%
+  mutate(Ancestry = factor(Ancestry, levels = c("EAS", "SAS", "AMR", "AFR", "EUR"))) %>%  #Reorder based on most frequent ancestry proportions
+  ggplot(aes(x = sample, y = Proportion, fill = Ancestry)) +
+  geom_col(width = 1) +
+  scale_fill_manual(values = cbbPalette )+
+  theme_cowplot() + 
+  scale_y_continuous(
+    # don't expand y scale at the lower end
+    expand = expansion(mult = c(0, 0.05))
+  ) +
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
+  facet_grid(~DX, scales = "free_x", space = "free_x" ))
+```
+
+    ## Warning: Removed 113025 rows containing missing values or values outside the scale range
+    ## (`geom_col()`).
+
+![](analysis_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+
+``` r
+#Save plot
+png(here("results/demographics_plot_16kb.png"),
+    units="in", width=8, height=3, res=300)
+print(demographics_plot_16kb)
+```
+
+    ## Warning: Removed 113025 rows containing missing values or values outside the scale range
+    ## (`geom_col()`).
+
+``` r
+dev.off()
+```
+
+    ## quartz_off_screen 
+    ##                 2
+
+``` r
+#Get an average of ancestries on the 16 kb window
+average_ancestries_cases_16kb = ancestry_proportions %>% 
+  filter(sample %in% (phenofile %>% 
+                        filter(DX == 1) %>% 
+                        pull(sample))) %>%
+  mutate(sample = factor(sample, levels = factor_order)) %>%
+  droplevels() %>% 
+  column_to_rownames(var = "sample") %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  rowMeans() %>% 
+  sort()
+#Pie chart
+slices_cases <- average_ancestries_cases_16kb
+lbls_cases <- names(average_ancestries_cases_16kb)
+pie(slices_cases, labels = lbls_cases, main="Average individual ancestry proportions (cases)", col = cbbPalette)
+```
+
+![](analysis_files/figure-gfm/unnamed-chunk-32-2.png)<!-- -->
+
+``` r
+#Save plot
+png(here("results/pie_aver_ances_cases_16kb.png"),
+    units="in", width=6, height=4, res=300)
+pie(slices_cases, labels = lbls_cases, main="Average individual ancestry proportions (cases)", col = cbbPalette)
+dev.off()
+```
+
+    ## quartz_off_screen 
+    ##                 2
+
+``` r
+#Get an average of ancestries on the whole population controls
+average_ancestries_controls = ancestry_proportions %>% 
+  filter(sample %in% (phenofile %>% 
+                        filter(DX == 0) %>% 
+                        pull(sample))) %>%
+  mutate(sample = factor(sample, levels = factor_order)) %>%
+  droplevels() %>% 
+  column_to_rownames(var = "sample") %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  rowMeans() %>% 
+  sort()
+#Pie chart
+slices_controls <- average_ancestries_controls
+lbls_controls <- names(average_ancestries_controls)
+pie(slices_controls, labels = lbls_controls, main="Average individual ancestry proportions (controls)", col = cbbPalette)
+```
+
+![](analysis_files/figure-gfm/unnamed-chunk-32-3.png)<!-- -->
+
+``` r
+#Save plot
+png(here("results/pie_aver_ances_controls_16kb.png"),
+    units="in", width=6, height=4, res=300)
+pie(slices_controls, labels = lbls_controls, main="Average individual ancestry proportions (controls)", col = cbbPalette)
+dev.off() 
+```
+
+    ## quartz_off_screen 
+    ##                 2
+
 ## Tools to cite
 
 - Shapeit4
@@ -1536,7 +1761,7 @@ sessionInfo()
 
     ## R version 4.4.2 (2024-10-31)
     ## Platform: aarch64-apple-darwin20
-    ## Running under: macOS Sequoia 15.6
+    ## Running under: macOS 26.4
     ## 
     ## Matrix products: default
     ## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
@@ -1553,28 +1778,28 @@ sessionInfo()
     ## 
     ## other attached packages:
     ##  [1] ggrepel_0.9.6      patchwork_1.3.0    cowplot_1.2.0      igraph_2.1.4      
-    ##  [5] readxl_1.4.3       mice_3.17.0        DataExplorer_0.8.3 here_1.0.1        
+    ##  [5] readxl_1.4.3       mice_3.17.0        DataExplorer_0.8.3 here_1.0.2        
     ##  [9] lubridate_1.9.3    forcats_1.0.0      stringr_1.5.1      dplyr_1.1.4       
-    ## [13] purrr_1.1.0        readr_2.1.5        tidyr_1.3.1        tibble_3.3.0      
+    ## [13] purrr_1.1.0        readr_2.1.5        tidyr_1.3.1        tibble_3.3.1      
     ## [17] ggplot2_3.5.2      tidyverse_2.0.0   
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] tidyselect_1.2.1   farver_2.1.2       fastmap_1.2.0      digest_0.6.37     
-    ##  [5] rpart_4.1.23       timechange_0.3.0   lifecycle_1.0.4    survival_3.7-0    
-    ##  [9] magrittr_2.0.3     compiler_4.4.2     rlang_1.1.6        tools_4.4.2       
-    ## [13] utf8_1.2.6         yaml_2.3.10        data.table_1.17.8  knitr_1.50        
+    ##  [1] tidyselect_1.2.1   farver_2.1.2       fastmap_1.2.0      digest_0.6.39     
+    ##  [5] rpart_4.1.23       timechange_0.3.0   lifecycle_1.0.5    survival_3.7-0    
+    ##  [9] magrittr_2.0.4     compiler_4.4.2     rlang_1.1.7        tools_4.4.2       
+    ## [13] utf8_1.2.6         yaml_2.3.12        data.table_1.18.0  knitr_1.50        
     ## [17] labeling_0.4.3     htmlwidgets_1.6.4  bit_4.6.0          RColorBrewer_1.1-3
     ## [21] withr_3.0.2        nnet_7.3-19        grid_4.4.2         jomo_2.7-6        
     ## [25] data.tree_1.1.0    scales_1.4.0       iterators_1.0.14   MASS_7.3-61       
     ## [29] cli_3.6.5          rmarkdown_2.29     crayon_1.5.3       reformulas_0.4.1  
     ## [33] generics_0.1.4     rstudioapi_0.17.1  tzdb_0.5.0         minqa_1.2.8       
-    ## [37] splines_4.4.2      parallel_4.4.2     cellranger_1.1.0   vctrs_0.6.5       
+    ## [37] splines_4.4.2      parallel_4.4.2     cellranger_1.1.0   vctrs_0.7.0       
     ## [41] boot_1.3-31        glmnet_4.1-9       Matrix_1.7-1       jsonlite_2.0.0    
     ## [45] hms_1.1.3          bit64_4.6.0-1      mitml_0.4-5        foreach_1.5.2     
     ## [49] glue_1.8.0         nloptr_2.2.1       pan_1.9            codetools_0.2-20  
     ## [53] stringi_1.8.7      shape_1.4.6.1      gtable_0.3.6       lme4_1.1-37       
-    ## [57] pillar_1.11.0      htmltools_0.5.8.1  R6_2.6.1           networkD3_0.4.1   
-    ## [61] Rdpack_2.6.4       rprojroot_2.0.4    vroom_1.6.5        evaluate_1.0.4    
+    ## [57] pillar_1.11.1      htmltools_0.5.8.1  R6_2.6.1           networkD3_0.4.1   
+    ## [61] Rdpack_2.6.4       rprojroot_2.1.1    vroom_1.6.5        evaluate_1.0.5    
     ## [65] lattice_0.22-6     rbibutils_2.3      backports_1.5.0    broom_1.0.7       
     ## [69] Rcpp_1.1.0         gridExtra_2.3      nlme_3.1-166       xfun_0.52         
     ## [73] pkgconfig_2.0.3
